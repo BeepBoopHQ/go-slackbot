@@ -99,13 +99,9 @@ func (r *Route) AddMatcher(m Matcher) *Route {
 	return r
 }
 
-// matcher types try to match a request.
-type Matcher interface {
-	Match(context.Context) (bool, context.Context)
-	SetBotID(botID string)
-}
-
-// ---- Regex Type Matcher ----------------------------------------------------
+// ============================================================================
+// Regex Type Matcher
+// ============================================================================
 
 type RegexpMatcher struct {
 	regex     string
@@ -135,7 +131,9 @@ func (r *Route) addRegexpMatcher(regex string) error {
 	return nil
 }
 
-// ---- Message Type Matcher --------------------------------------------------
+// ============================================================================
+// Message Type Matcher
+// ============================================================================
 
 type TypesMatcher struct {
 	types     []MessageType

@@ -25,6 +25,7 @@ type Bot struct {
 	RTM    *slack.RTM
 }
 
+// Run start the bot
 func (b *Bot) Run() {
 	b.RTM = b.Client.NewRTM()
 	go b.RTM.ManageConnection()
@@ -38,6 +39,11 @@ func (b *Bot) Run() {
 				fmt.Printf("Connected: %#v\n", ev.Info.User)
 				b.SetBotID(ev.Info.User.ID)
 			case *slack.MessageEvent:
+				// ignore messages from the current user, the bot user
+				if b.botUserID == ev.User {
+					continue
+				}
+
 				fmt.Printf("Message: %#v\n", ev.Text)
 				ctx = AddMessageToContext(ctx, ev)
 				var match RouteMatch

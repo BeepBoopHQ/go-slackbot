@@ -17,7 +17,7 @@ func BotFromContext(ctx context.Context) *Bot {
 	return nil
 }
 
-// AddLoggerToContext sets the logger and returns the newly derived context
+// AddBotToContext sets the bot reference in context and returns the newly derived context
 func AddBotToContext(ctx context.Context, bot *Bot) context.Context {
 	return context.WithValue(ctx, BOT_CONTEXT, bot)
 }
@@ -29,7 +29,7 @@ func MessageFromContext(ctx context.Context) *slack.MessageEvent {
 	return nil
 }
 
-// AddLoggerToContext sets the logger and returns the newly derived context
+// AddMessageToContext sets the Slack message event reference in context and returns the newly derived context
 func AddMessageToContext(ctx context.Context, msg *slack.MessageEvent) context.Context {
 	return context.WithValue(ctx, MESSAGE_CONTEXT, msg)
 }

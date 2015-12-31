@@ -1,10 +1,6 @@
 package slackbot
 
-import (
-	"fmt"
-
-	"golang.org/x/net/context"
-)
+import "golang.org/x/net/context"
 
 type Router interface {
 	Match(context.Context, *RouteMatch) (bool, context.Context)
@@ -64,7 +60,6 @@ func (r *SimpleRouter) AddMatcher(m Matcher) *Route {
 }
 
 func (r *SimpleRouter) SetBotID(botID string) {
-	fmt.Println("Setting botUserID " + botID)
 	r.botUserID = botID
 	for _, route := range r.routes {
 		route.setBotID(botID)
