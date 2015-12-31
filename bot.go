@@ -48,7 +48,6 @@ func (b *Bot) Run() {
 				ctx = AddMessageToContext(ctx, ev)
 				var match RouteMatch
 				if matched, ctx := b.Match(ctx, &match); matched {
-					fmt.Println("Matched!")
 					match.Handler(ctx)
 				}
 
