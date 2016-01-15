@@ -6,7 +6,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/BeepBoopHQ/go-slackbot"
+	slackbot "github.com/BeepBoopHQ/go-slackbot"
 	"github.com/jsgoecke/go-wit"
 	"github.com/nlopes/slack"
 )
@@ -21,15 +21,15 @@ func main() {
 }
 
 func HelloHandler(ctx context.Context, bot *slackbot.Bot, msg *slack.MessageEvent) {
-	bot.ReplyAndType(msg, "Oh hello!")
+	bot.Reply(msg, "Oh hello!", slackbot.WithTyping)
 }
 
 func HowAreYouHandler(ctx context.Context, bot *slackbot.Bot, msg *slack.MessageEvent) {
-	bot.ReplyAndType(msg, "A bit tired. You get it? A bit?")
+	bot.Reply(msg, "A bit tired. You get it? A bit?", slackbot.WithTyping)
 }
 
 func ConfusedHandler(ctx context.Context, bot *slackbot.Bot, msg *slack.MessageEvent) {
-	bot.ReplyAndType(msg, "I don't understand 😰")
+	bot.Reply(msg, "I don't understand 😰", slackbot.WithTyping)
 }
 
 func WitPreprocess(ctx context.Context) context.Context {
@@ -39,7 +39,7 @@ func WitPreprocess(ctx context.Context) context.Context {
 	witMessage, err := wit.NewClient(os.Getenv("WIT_TOKEN")).Message(req)
 	if err != nil {
 		bot := slackbot.BotFromContext(ctx)
-		bot.Reply(msg, "Uh oh, I seem to be out of sorts :dizzy_face")
+		bot.Reply(msg, "Uh oh, I seem to be out of sorts :dizzy_face", slackbot.WithTyping)
 		return ctx
 	}
 	fmt.Printf("WIT: %#v\n", witMessage)

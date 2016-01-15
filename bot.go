@@ -9,6 +9,14 @@ import (
 	"github.com/nlopes/slack"
 )
 
+const (
+	WithTyping    bool = true
+	WithoutTyping bool = false
+
+	maxTypingSleepMs time.Duration = time.Millisecond * 2000
+)
+
+// New constructs a new Bot using the slackToken to authorize against the Slack service.
 func New(slackToken string) *Bot {
 	b := &Bot{Client: slack.New(slackToken)}
 	return b
@@ -25,7 +33,7 @@ type Bot struct {
 	RTM    *slack.RTM
 }
 
-// Run start the bot
+// Run listens for incoming slack RTM events, matching them to an appropriate handler.
 func (b *Bot) Run() {
 	b.RTM = b.Client.NewRTM()
 	go b.RTM.ManageConnection()
@@ -37,14 +45,13 @@ func (b *Bot) Run() {
 			switch ev := msg.Data.(type) {
 			case *slack.ConnectedEvent:
 				fmt.Printf("Connected: %#v\n", ev.Info.User)
-				b.SetBotID(ev.Info.User.ID)
+				b.setBotID(ev.Info.User.ID)
 			case *slack.MessageEvent:
 				// ignore messages from the current user, the bot user
 				if b.botUserID == ev.User {
 					continue
 				}
 
-				fmt.Printf("Message: %#v\n", ev.Text)
 				ctx = AddMessageToContext(ctx, ev)
 				var match RouteMatch
 				if matched, ctx := b.Match(ctx, &match); matched {
@@ -59,57 +66,58 @@ func (b *Bot) Run() {
 				break
 
 			default:
-
 				// Ignore other events..
 				// fmt.Printf("Unexpected: %v\n", msg.Data)
 			}
 		}
 	}
-
 }
 
-// Reply to a message and simulate typing through the realtime messaging API
-func (b *Bot) ReplyAndType(evt *slack.MessageEvent, text string) {
-	b.Type(evt.Channel, text, 0)
-	b.Reply(evt, text)
+// Reply replies to a message event with a simple message.
+func (b *Bot) Reply(evt *slack.MessageEvent, msg string, typing bool) {
+	if typing {
+		b.Type(evt, msg)
+	}
+	b.RTM.SendMessage(b.RTM.NewOutgoingMessage(msg, evt.Channel))
 }
 
-// Reply to a message through the realtime messaging API
-func (b *Bot) Reply(evt *slack.MessageEvent, text string) {
-	b.RTM.SendMessage(b.RTM.NewOutgoingMessage(text, evt.Channel))
-}
-
-// Reply to a message with Attachments simulate typing
-func (b *Bot) ReplyAttachmentsAndType(evt *slack.MessageEvent, typingDelaySecs int, attachments []slack.Attachment) {
-	b.Type(evt.Channel, "", typingDelaySecs)
-	b.ReplyAttachments(evt, attachments)
-}
-
-// Reply to a message with attachments through the web client
-func (b *Bot) ReplyAttachments(evt *slack.MessageEvent, attachments []slack.Attachment) {
+// ReplyWithAttachments replys to a message event with a Slack Attachments message.
+func (b *Bot) ReplyWithAttachments(evt *slack.MessageEvent, attachments []slack.Attachment, typing bool) {
 	params := slack.PostMessageParameters{AsUser: true}
 	params.Attachments = attachments
 
 	b.Client.PostMessage(evt.Msg.Channel, "", params)
 }
 
-// Type sends a typing message and calls time.Sleep to simulate a delay
-func (b *Bot) Type(channel, text string, typingDelaySecs int) {
-	var sleepDuration time.Duration
-	if typingDelaySecs > 0 {
-		sleepDuration = time.Second * time.Duration(typingDelaySecs)
-	} else {
-		sleepDuration = time.Minute * time.Duration(len(text)) / 3000
+// Type sends a typing message and simulates delay (max 2000ms) based on message size.
+func (b *Bot) Type(evt *slack.MessageEvent, msg interface{}) {
+	msgLen := msgLen(msg)
+
+	sleepDuration := time.Minute * time.Duration(msgLen) / 3000
+	if sleepDuration > maxTypingSleepMs {
+		sleepDuration = maxTypingSleepMs
 	}
 
-	b.RTM.SendMessage(b.RTM.NewTypingMessage(channel))
+	b.RTM.SendMessage(b.RTM.NewTypingMessage(evt.Channel))
 	time.Sleep(sleepDuration)
 }
 
+// Fetch the botUserID.
 func (b *Bot) BotUserID() string {
 	return b.botUserID
 }
 
-func (b *Bot) SetBotID(ID string) {
+func (b *Bot) setBotID(ID string) {
 	b.botUserID = ID
+}
+
+// msgLen gets lenght of message and attachment messages. Unsupported types return 0.
+func msgLen(msg interface{}) (msgLen int) {
+	switch m := msg.(type) {
+	case string:
+		msgLen = len(m)
+	case []slack.Attachment:
+		msgLen = len(fmt.Sprintf("%#v", m))
+	}
+	return
 }
