@@ -70,7 +70,7 @@ func (b *Bot) Run() {
 
 // Reply to a message and simulate typing through the realtime messaging API
 func (b *Bot) ReplyAndType(evt *slack.MessageEvent, text string) {
-	b.Type(evt.Channel, text)
+	b.Type(evt.Channel, text, 0)
 	b.Reply(evt, text)
 }
 
@@ -79,9 +79,29 @@ func (b *Bot) Reply(evt *slack.MessageEvent, text string) {
 	b.RTM.SendMessage(b.RTM.NewOutgoingMessage(text, evt.Channel))
 }
 
+// Reply to a message with Attachments simulate typing
+func (b *Bot) ReplyAttachmentsAndType(evt *slack.MessageEvent, typingDelaySecs int, attachments []slack.Attachment) {
+	b.Type(evt.Channel, "", typingDelaySecs)
+	b.ReplyAttachments(evt, attachments)
+}
+
+// Reply to a message with attachments through the web client
+func (b *Bot) ReplyAttachments(evt *slack.MessageEvent, attachments []slack.Attachment) {
+	params := slack.PostMessageParameters{AsUser: true}
+	params.Attachments = attachments
+
+	b.Client.PostMessage(evt.Msg.Channel, "", params)
+}
+
 // Type sends a typing message and calls time.Sleep to simulate a delay
-func (b *Bot) Type(channel, text string) {
-	sleepDuration := time.Minute * time.Duration(len(text)) / 3000
+func (b *Bot) Type(channel, text string, typingDelaySecs int) {
+	var sleepDuration time.Duration
+	if typingDelaySecs > 0 {
+		sleepDuration = time.Second * time.Duration(typingDelaySecs)
+	} else {
+		sleepDuration = time.Minute * time.Duration(len(text)) / 3000
+	}
+
 	b.RTM.SendMessage(b.RTM.NewTypingMessage(channel))
 	time.Sleep(sleepDuration)
 }
