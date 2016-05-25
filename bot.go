@@ -144,6 +144,7 @@ func (b *Bot) BotUserID() string {
 
 func (b *Bot) setBotID(ID string) {
 	b.botUserID = ID
+	b.SimpleRouter.SetBotID(ID)
 }
 
 // msgLen gets lenght of message and attachment messages. Unsupported types return 0.
