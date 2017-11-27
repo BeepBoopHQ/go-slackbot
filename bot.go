@@ -124,6 +124,14 @@ func (b *Bot) ReplyWithAttachments(evt *slack.MessageEvent, attachments []slack.
 	b.Client.PostMessage(evt.Msg.Channel, "", params)
 }
 
+// ReplyAsThread
+func (b *Bot) ReplyInThread(evt *slack.MessageEvent, msg string, typing bool) {
+	params := slack.PostMessageParameters{AsUser: true}
+	params.ThreadTimestamp = evt.Timestamp
+
+	b.Client.PostMessage(evt.Msg.Channel, msg, params)
+}
+
 // Type sends a typing message and simulates delay (max 2000ms) based on message size.
 func (b *Bot) Type(evt *slack.MessageEvent, msg interface{}) {
 	msgLen := msgLen(msg)
