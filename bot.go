@@ -127,7 +127,12 @@ func (b *Bot) ReplyWithAttachments(evt *slack.MessageEvent, attachments []slack.
 // ReplyAsThread
 func (b *Bot) ReplyInThread(evt *slack.MessageEvent, msg string, typing bool) {
 	params := slack.PostMessageParameters{AsUser: true}
-	params.ThreadTimestamp = evt.Timestamp
+
+	if evt.ThreadTimestamp == "" {
+		params.ThreadTimestamp = evt.Timestamp
+	} else {
+		params.ThreadTimestamp = evt.ThreadTimestamp
+	}
 
 	b.Client.PostMessage(evt.Msg.Channel, msg, params)
 }
