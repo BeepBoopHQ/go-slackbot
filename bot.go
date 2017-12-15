@@ -1,5 +1,5 @@
 // Package slackbot hopes to ease development of Slack bots by adding helpful
-// methods and a mux-router style interface to the github.com/nlopes/slack package.
+// methods and a mux-router style interface to the github.com/essentialkaos/slack package.
 //
 // Incoming Slack RTM events are mapped to a handler in the following form:
 // 	bot.Hear("(?i)how are you(.*)").MessageHandler(HowAreYouHandler)
@@ -25,7 +25,7 @@
 //		bot.ReplyWithAttachments(evt, attachments, slackbot.WithTyping)
 //	}
 //
-// The slackbot package exposes  github.com/nlopes/slack RTM and Client objects
+// The slackbot package exposes  github.com/essentialkaos/slack RTM and Client objects
 // enabling a consumer to interact with the lower level package directly:
 // 	func HowAreYouHandler(ctx context.Context, bot *slackbot.Bot, evt *slack.MessageEvent) {
 // 		bot.RTM.NewOutgoingMessage("Hello", "#random")
@@ -37,11 +37,13 @@ package slackbot
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"time"
 
 	"golang.org/x/net/context"
 
-	"github.com/nlopes/slack"
+	"github.com/essentialkaos/slack"
 )
 
 const (
@@ -54,6 +56,9 @@ const (
 // New constructs a new Bot using the slackToken to authorize against the Slack service.
 func New(slackToken string) *Bot {
 	b := &Bot{Client: slack.New(slackToken)}
+	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags)
+	b.Client.SetDebug(true)
+	slack.SetLogger(logger)
 	return b
 }
 
@@ -71,6 +76,7 @@ type Bot struct {
 // Run listens for incoming slack RTM events, matching them to an appropriate handler.
 func (b *Bot) Run() {
 	b.RTM = b.Client.NewRTM()
+	fmt.Printf("%v", b.RTM.GetInfo())
 	go b.RTM.ManageConnection()
 	for {
 		select {
