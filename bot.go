@@ -1,5 +1,5 @@
 // Package slackbot hopes to ease development of Slack bots by adding helpful
-// methods and a mux-router style interface to the github.com/nlopes/slack package.
+// methods and a mux-router style interface to the github.com/essentialkaos/slack package.
 //
 // Incoming Slack RTM events are mapped to a handler in the following form:
 // 	bot.Hear("(?i)how are you(.*)").MessageHandler(HowAreYouHandler)
@@ -25,7 +25,7 @@
 //		bot.ReplyWithAttachments(evt, attachments, slackbot.WithTyping)
 //	}
 //
-// The slackbot package exposes  github.com/nlopes/slack RTM and Client objects
+// The slackbot package exposes  github.com/essentialkaos/slack RTM and Client objects
 // enabling a consumer to interact with the lower level package directly:
 // 	func HowAreYouHandler(ctx context.Context, bot *slackbot.Bot, evt *slack.MessageEvent) {
 // 		bot.RTM.NewOutgoingMessage("Hello", "#random")
@@ -41,7 +41,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/nlopes/slack"
+	"github.com/essentialkaos/slack"
 )
 
 const (
@@ -71,6 +71,7 @@ type Bot struct {
 // Run listens for incoming slack RTM events, matching them to an appropriate handler.
 func (b *Bot) Run() {
 	b.RTM = b.Client.NewRTM()
+	fmt.Printf("%v", b.RTM.GetInfo())
 	go b.RTM.ManageConnection()
 	for {
 		select {
@@ -124,6 +125,19 @@ func (b *Bot) ReplyWithAttachments(evt *slack.MessageEvent, attachments []slack.
 	b.Client.PostMessage(evt.Msg.Channel, "", params)
 }
 
+// ReplyAsThread
+func (b *Bot) ReplyInThread(evt *slack.MessageEvent, msg string, typing bool) {
+	params := slack.PostMessageParameters{AsUser: true}
+
+	if evt.ThreadTimestamp == "" {
+		params.ThreadTimestamp = evt.Timestamp
+	} else {
+		params.ThreadTimestamp = evt.ThreadTimestamp
+	}
+
+	b.Client.PostMessage(evt.Msg.Channel, msg, params)
+}
+
 // Type sends a typing message and simulates delay (max 2000ms) based on message size.
 func (b *Bot) Type(evt *slack.MessageEvent, msg interface{}) {
 	msgLen := msgLen(msg)
@@ -144,6 +158,7 @@ func (b *Bot) BotUserID() string {
 
 func (b *Bot) setBotID(ID string) {
 	b.botUserID = ID
+	b.SimpleRouter.SetBotID(ID)
 }
 
 // msgLen gets lenght of message and attachment messages. Unsupported types return 0.
