@@ -37,8 +37,6 @@ package slackbot
 
 import (
 	"fmt"
-	"log"
-	"os"
 	"time"
 
 	"golang.org/x/net/context"
@@ -56,9 +54,6 @@ const (
 // New constructs a new Bot using the slackToken to authorize against the Slack service.
 func New(slackToken string) *Bot {
 	b := &Bot{Client: slack.New(slackToken)}
-	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags)
-	b.Client.SetDebug(true)
-	slack.SetLogger(logger)
 	return b
 }
 
