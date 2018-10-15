@@ -121,7 +121,7 @@ func (b *Bot) ReplyWithAttachments(evt *slack.MessageEvent, attachments []slack.
 	params := slack.PostMessageParameters{AsUser: true}
 	params.Attachments = attachments
 
-	b.Client.PostMessage(evt.Msg.Channel, "", params)
+	b.Client.PostMessage(evt.Msg.Channel, slack.MsgOptionPostMessageParameters(params) )
 }
 
 // Type sends a typing message and simulates delay (max 2000ms) based on message size.
