@@ -52,8 +52,8 @@ const (
 )
 
 // New constructs a new Bot using the slackToken to authorize against the Slack service.
-func New(slackToken string) *Bot {
-	b := &Bot{Client: slack.New(slackToken)}
+func New(slackToken string, options ...slack.Option) *Bot {
+	b := &Bot{Client: slack.New(slackToken,options...)}
 	return b
 }
 
