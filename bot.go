@@ -1,5 +1,5 @@
 // Package slackbot hopes to ease development of Slack bots by adding helpful
-// methods and a mux-router style interface to the github.com/GrantStreetGroup/slack package.
+// methods and a mux-router style interface to the github.com/nlopes/slack package.
 //
 // Incoming Slack RTM events are mapped to a handler in the following form:
 // 	bot.Hear("(?i)how are you(.*)").MessageHandler(HowAreYouHandler)
@@ -25,7 +25,7 @@
 //		bot.ReplyWithAttachments(evt, attachments, slackbot.WithTyping)
 //	}
 //
-// The slackbot package exposes  github.com/GrantStreetGroup/slack RTM and Client objects
+// The slackbot package exposes  github.com/nlopes/slack RTM and Client objects
 // enabling a consumer to interact with the lower level package directly:
 // 	func HowAreYouHandler(ctx context.Context, bot *slackbot.Bot, evt *slack.MessageEvent) {
 // 		bot.RTM.NewOutgoingMessage("Hello", "#random")
@@ -41,7 +41,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/GrantStreetGroup/slack"
+	"github.com/nlopes/slack"
 )
 
 const (

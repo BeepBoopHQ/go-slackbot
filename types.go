@@ -3,7 +3,7 @@ package slackbot
 import (
 	"golang.org/x/net/context"
 
-	"github.com/GrantStreetGroup/slack"
+	"github.com/nlopes/slack"
 )
 
 type MessageType string
