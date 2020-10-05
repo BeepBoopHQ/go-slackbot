@@ -1,5 +1,5 @@
 // Package slackbot hopes to ease development of Slack bots by adding helpful
-// methods and a mux-router style interface to the github.com/nlopes/slack package.
+// methods and a mux-router style interface to the github.com/slack-go/slack package.
 //
 // Incoming Slack RTM events are mapped to a handler in the following form:
 // 	bot.Hear("(?i)how are you(.*)").MessageHandler(HowAreYouHandler)
@@ -14,10 +14,10 @@
 // 		attachment := slack.Attachment{
 // 			Pretext:   "We bring bots to life. :sunglasses: :thumbsup:",
 // 			Title:     "Host, deploy and share your bot in seconds.",
-// 			TitleLink: "https://beepboophq.com/",
+// 			TitleLink: "https://GrantStreetGroup.com/",
 // 			Text:      txt,
 // 			Fallback:  txt,
-// 			ImageURL:  "https://storage.googleapis.com/beepboophq/_assets/bot-1.22f6fb.png",
+// 			ImageURL:  "https://storage.googleapis.com/GrantStreetGroup/_assets/bot-1.22f6fb.png",
 // 			Color:     "#7CD197",
 // 		}
 //
@@ -25,14 +25,14 @@
 //		bot.ReplyWithAttachments(evt, attachments, slackbot.WithTyping)
 //	}
 //
-// The slackbot package exposes  github.com/nlopes/slack RTM and Client objects
+// The slackbot package exposes  github.com/slack-go/slack RTM and Client objects
 // enabling a consumer to interact with the lower level package directly:
 // 	func HowAreYouHandler(ctx context.Context, bot *slackbot.Bot, evt *slack.MessageEvent) {
 // 		bot.RTM.NewOutgoingMessage("Hello", "#random")
 // 	}
 //
 //
-// Project home and samples: https://github.com/BeepBoopHQ/go-slackbot
+// Project home and samples: https://github.com/GrantStreetGroup/go-slackbot
 package slackbot
 
 import (
@@ -41,7 +41,7 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 const (
@@ -53,7 +53,7 @@ const (
 
 // New constructs a new Bot using the slackToken to authorize against the Slack service.
 func New(slackToken string, options ...slack.Option) *Bot {
-	b := &Bot{Client: slack.New(slackToken,options...)}
+	b := &Bot{Client: slack.New(slackToken, options...)}
 	return b
 }
 
@@ -118,10 +118,10 @@ func (b *Bot) Reply(evt *slack.MessageEvent, msg string, typing bool) {
 
 // ReplyWithAttachments replys to a message event with a Slack Attachments message.
 func (b *Bot) ReplyWithAttachments(evt *slack.MessageEvent, attachments []slack.Attachment, typing bool) {
-//	params := slack.PostMessageParameters{AsUser: true}
-//	params.Attachments = attachments
+	//	params := slack.PostMessageParameters{AsUser: true}
+	//	params.Attachments = attachments
 
-	b.Client.PostMessage(evt.Msg.Channel, slack.MsgOptionAttachments(attachments...),slack.MsgOptionAsUser(true))
+	b.Client.PostMessage(evt.Msg.Channel, slack.MsgOptionAttachments(attachments...), slack.MsgOptionAsUser(true))
 }
 
 // Type sends a typing message and simulates delay (max 2000ms) based on message size.
