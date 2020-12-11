@@ -1,7 +1,6 @@
 package slackbot
 
 import (
-	"log"
 	"regexp"
 
 	"golang.org/x/net/context"
@@ -114,9 +113,6 @@ func (rm *RegexpMatcher) Match(ctx context.Context) (bool, context.Context) {
 	// A message be receded by a direct mention. For simplicity sake, strip out any potention direct mentions first
 	text := StripDirectMention(msg.Text)
 	// now consider stripped text against regular expression
-
-	log.Printf("DEBUG: Raw: '%s' Message: '%s', RegExp: '%s'", msg.Text, text, rm.regex)
-
 	matched := regexp.MustCompile(rm.regex).MatchString(text)
 	return matched, ctx
 }
