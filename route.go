@@ -115,7 +115,7 @@ func (rm *RegexpMatcher) Match(ctx context.Context) (bool, context.Context) {
 	text := StripDirectMention(msg.Text)
 	// now consider stripped text against regular expression
 
-	log.Printf("DEBUG:  Message: '%s', RegExp: '%s'", text, rm.regex)
+	log.Printf("DEBUG: Raw: '%s' Message: '%s', RegExp: '%s'", msg.Text, text, rm.regex)
 
 	matched := regexp.MustCompile(rm.regex).MatchString(text)
 	return matched, ctx
