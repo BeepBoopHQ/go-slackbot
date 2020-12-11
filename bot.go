@@ -37,6 +37,7 @@ package slackbot
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"golang.org/x/net/context"
@@ -86,6 +87,7 @@ func (b *Bot) Run() {
 				if b.botUserID == ev.User {
 					continue
 				}
+				log.Println("MessageEvent")
 
 				ctx = AddMessageToContext(ctx, ev)
 				var match RouteMatch
