@@ -8,7 +8,7 @@ import (
 
 // StripDirectMention removes a leading mention (aka direct mention) from a message string
 func StripDirectMention(text string) string {
-	return regexp.MustCompile(`(^<@[a-zA-Z0-9]+>[\:]*[\s]*)?(.*)`).FindStringSubmatch(text)[2]
+	return regexp.MustCompile(`(?s)(^<@[a-zA-Z0-9]+>[\:]*[\s]*)?(.*)`).FindStringSubmatch(text)[2]
 }
 
 // IsDirectMessage returns true if this message is in a direct message conversation
