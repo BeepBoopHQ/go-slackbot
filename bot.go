@@ -93,6 +93,29 @@ func (b *Bot) Run() {
 					match.Handler(ctx)
 				}
 
+			case *slack.ReactionAddedEvent:
+				// Handle reaction events
+				if b.botUserID == ev.User {
+					continue
+				}
+
+				ctx = AddReactionAddedToContext(ctx, ev)
+				var match RouteMatch
+				if matched, ctx := b.Match(ctx, &match); matched {
+					match.Handler(ctx)
+				}
+			case *slack.ReactionRemovedEvent:
+				// Handle reaction events
+				if b.botUserID == ev.User {
+					continue
+				}
+
+				ctx = AddReactionRemovedToContext(ctx, ev)
+				var match RouteMatch
+				if matched, ctx := b.Match(ctx, &match); matched {
+					match.Handler(ctx)
+				}
+
 			case *slack.RTMError:
 				fmt.Printf("Error: %s\n", ev.Error())
 

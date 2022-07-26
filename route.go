@@ -170,3 +170,44 @@ func (r *Route) addTypesMatcher(types ...MessageType) error {
 	r.AddMatcher(&TypesMatcher{types: types, botUserID: ""})
 	return nil
 }
+
+// ============================================================================
+// Reaction Matcher
+// ============================================================================
+
+type ReactionMatcher struct {
+	reaction  string
+	botUserID string
+}
+
+func (rm *ReactionMatcher) Match(ctx context.Context) (bool, context.Context) {
+
+	switch ReactionTypeFromContext(ctx) {
+	case "Added":
+		rv := ReactionAddedFromContext(ctx)
+		if rv.Reaction == rm.reaction {
+			return true, ctx
+		}
+	case "Removed":
+		rv := ReactionRemovedFromContext(ctx)
+		if rv.Reaction == rm.reaction {
+			return true, ctx
+		}
+	}
+
+	return false, ctx
+}
+
+func (rm *ReactionMatcher) SetBotID(botID string) {
+	rm.botUserID = botID
+}
+
+// addReactionMatcher adds a reactions matcher to route
+func (r *Route) addReactionMatcher(reaction string) error {
+	if r.err != nil {
+		return r.err
+	}
+
+	r.AddMatcher(&ReactionMatcher{reaction: reaction, botUserID: ""})
+	return nil
+}

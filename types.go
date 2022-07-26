@@ -8,6 +8,8 @@ import (
 
 type MessageType string
 
+type Reactions string
+
 const (
 	DirectMessage MessageType = "direct_message"
 	DirectMention MessageType = "direct_mention"
