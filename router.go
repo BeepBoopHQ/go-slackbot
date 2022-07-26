@@ -11,6 +11,7 @@ type Router interface {
 	Messages(types ...MessageType) *Route
 	AddMatcher(m Matcher) *Route
 	SetBotID(botID string)
+	ReactTo(react string) *Route
 }
 
 type SimpleRouter struct {
@@ -41,6 +42,10 @@ func (r *SimpleRouter) NewRoute() *Route {
 
 func (r *SimpleRouter) Hear(regex string) *Route {
 	return r.NewRoute().Hear(regex)
+}
+
+func (r *SimpleRouter) ReactTo(react string) *Route {
+	return r.NewRoute().ReactTo(react)
 }
 
 func (r *SimpleRouter) Handler(handler Handler) *Route {
