@@ -56,6 +56,12 @@ func (r *Route) Hear(regex string) *Route {
 	return r
 }
 
+// Adds a reaction matcher
+func (r *Route) ReactTo(react string) *Route {
+	r.err = r.addReactionMatcher(react)
+	return r
+}
+
 func (r *Route) Messages(types ...MessageType) *Route {
 	r.addTypesMatcher(types...)
 	return r
