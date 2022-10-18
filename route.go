@@ -1,6 +1,7 @@
 package slackbot
 
 import (
+	"log"
 	"regexp"
 
 	"golang.org/x/net/context"
@@ -193,6 +194,10 @@ type ReactionMatcher struct {
 }
 
 func (rm *ReactionMatcher) Match(ctx context.Context) (bool, context.Context) {
+
+	if IsDebug(ctx) {
+		log.Printf("DEBUG: %s", ReactionTypeFromContext(ctx))
+	}
 
 	switch ReactionTypeFromContext(ctx) {
 	case "Added":

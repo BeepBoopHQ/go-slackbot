@@ -10,6 +10,7 @@ const (
 	MESSAGE_CONTEXT  = "__MESSAGE_CONTEXT__"
 	REACTION_CONTEXT = "__REACTION_CONTEXT__"
 	REACTION_EVENT   = "__REACTION_EVENT__"
+	BOT_DEBUG        = "__BOT_DEBUG__"
 )
 
 func BotFromContext(ctx context.Context) *Bot {
@@ -66,4 +67,15 @@ func ReactionRemovedFromContext(ctx context.Context) *slack.ReactionRemovedEvent
 		return result
 	}
 	return nil
+}
+
+func SetDebug(ctx context.Context) context.Context {
+	return context.WithValue(ctx, BOT_DEBUG, true)
+}
+
+func IsDebug(ctx context.Context) bool {
+	if result, ok := ctx.Value(BOT_DEBUG).(bool); ok {
+		return result
+	}
+	return false
 }
