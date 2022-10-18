@@ -148,6 +148,9 @@ type TypesMatcher struct {
 
 func (tm *TypesMatcher) Match(ctx context.Context) (bool, context.Context) {
 	msg := MessageFromContext(ctx)
+	if msg == nil {
+		return false, ctx
+	}
 	for _, t := range tm.types {
 		switch t {
 		case DirectMessage:
