@@ -48,7 +48,7 @@ const (
 	WithTyping    bool = true
 	WithoutTyping bool = false
 
-	maxTypingSleepMs time.Duration = time.Millisecond * 2000
+	maxTypingSleep time.Duration = time.Millisecond * 2000
 )
 
 // New constructs a new Bot using the slackToken to authorize against the Slack service.
@@ -66,6 +66,7 @@ type Bot struct {
 	// Slack API
 	Client *slack.Client
 	RTM    *slack.RTM
+	Debug  bool
 }
 
 // Run listens for incoming slack RTM events, matching them to an appropriate handler.
@@ -77,6 +78,9 @@ func (b *Bot) Run() {
 		case msg := <-b.RTM.IncomingEvents:
 			ctx := context.Background()
 			ctx = AddBotToContext(ctx, b)
+			if b.Debug {
+				ctx = SetDebug(ctx)
+			}
 			switch ev := msg.Data.(type) {
 			case *slack.ConnectedEvent:
 				fmt.Printf("Connected: %#v\n", ev.Info.User)
@@ -88,6 +92,29 @@ func (b *Bot) Run() {
 				}
 
 				ctx = AddMessageToContext(ctx, ev)
+				var match RouteMatch
+				if matched, ctx := b.Match(ctx, &match); matched {
+					match.Handler(ctx)
+				}
+
+			case *slack.ReactionAddedEvent:
+				// Handle reaction events
+				if b.botUserID == ev.User {
+					continue
+				}
+
+				ctx = AddReactionAddedToContext(ctx, ev)
+				var match RouteMatch
+				if matched, ctx := b.Match(ctx, &match); matched {
+					match.Handler(ctx)
+				}
+			case *slack.ReactionRemovedEvent:
+				// Handle reaction events
+				if b.botUserID == ev.User {
+					continue
+				}
+
+				ctx = AddReactionRemovedToContext(ctx, ev)
 				var match RouteMatch
 				if matched, ctx := b.Match(ctx, &match); matched {
 					match.Handler(ctx)
@@ -129,8 +156,8 @@ func (b *Bot) Type(evt *slack.MessageEvent, msg interface{}) {
 	msgLen := msgLen(msg)
 
 	sleepDuration := time.Minute * time.Duration(msgLen) / 3000
-	if sleepDuration > maxTypingSleepMs {
-		sleepDuration = maxTypingSleepMs
+	if sleepDuration > maxTypingSleep {
+		sleepDuration = maxTypingSleep
 	}
 
 	b.RTM.SendMessage(b.RTM.NewTypingMessage(evt.Channel))
