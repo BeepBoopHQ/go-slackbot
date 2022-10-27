@@ -84,6 +84,20 @@ func (r *Route) MessageHandler(fn MessageHandler) *Route {
 	})
 }
 
+func (r *Route) ReactionHandler(fn ReactionHandler) *Route {
+
+	return r.Handler(func(ctx context.Context) {
+		bot := BotFromContext(ctx)
+		switch ReactionTypeFromContext(ctx) {
+		case "Added":
+			fn(ctx, bot, ReactionAddedFromContext(ctx), nil)
+		case "Removed":
+			fn(ctx, bot, nil, ReactionRemovedFromContext(ctx))
+		}
+	})
+
+}
+
 func (r *Route) Preprocess(fn Preprocessor) *Route {
 	if r.err == nil {
 		r.preprocessor = fn

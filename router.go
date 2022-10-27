@@ -8,6 +8,7 @@ type Router interface {
 	Hear(regex string) *Route
 	Handler(handler Handler) *Route
 	MessageHandler(handler MessageHandler) *Route
+	ReactionHandler(handler ReactionHandler) *Route
 	Messages(types ...MessageType) *Route
 	AddMatcher(m Matcher) *Route
 	SetBotID(botID string)
@@ -50,6 +51,10 @@ func (r *SimpleRouter) ReactTo(react string) *Route {
 
 func (r *SimpleRouter) Handler(handler Handler) *Route {
 	return r.NewRoute().Handler(handler)
+}
+
+func (r *SimpleRouter) ReactionHandler(handler ReactionHandler) *Route {
+	return r.NewRoute().ReactionHandler(handler)
 }
 
 func (r *SimpleRouter) MessageHandler(handler MessageHandler) *Route {
