@@ -1,7 +1,7 @@
 ## go-slackbot - Build Slackbots in Go
 
 The go-slackbot project hopes to ease development of Slack bots by adding helpful
-methods and a mux-router style interface to the github.com/nlopes/slack package.
+methods and a mux-router style interface to the github.com/slack-go/slack package.
 
 Incoming Slack RTM events are mapped to a handler in the following form:
 
@@ -19,10 +19,10 @@ In addition to several useful functions in the utils.go file, the slackbot.Bot s
 		attachment := slack.Attachment{
 			Pretext:   "We bring bots to life. :sunglasses: :thumbsup:",
 			Title:     "Host, deploy and share your bot in seconds.",
-			TitleLink: "https:beepboophq.com/",
+			TitleLink: "https:GrantStreetGroup.com/",
 			Text:      txt,
 			Fallback:  txt,
-			ImageURL:  "https:storage.googleapis.com/beepboophq/_assets/bot-1.22f6fb.png",
+			ImageURL:  "https:storage.googleapis.com/GrantStreetGroup/_assets/bot-1.22f6fb.png",
 			Color:     "#7CD197",
 		}
 
@@ -30,7 +30,7 @@ In addition to several useful functions in the utils.go file, the slackbot.Bot s
 		bot.ReplyWithAttachments(evt, attachments, slackbot.WithTyping)
 	}
   
-But wait, there's more! Well, until there's more, the slackbot package exposes github.com/nlopes/slack RTM and Client objects enabling a consumer to interact with the lower level package directly:
+But wait, there's more! Well, until there's more, the slackbot package exposes github.com/slack-go/slack RTM and Client objects enabling a consumer to interact with the lower level package directly:
 
     func HowAreYouHandler(ctx context.Context, bot *slackbot.Bot, evt *slack.MessageEvent) {
       bot.RTM.NewOutgoingMessage("Hello", "#random")
@@ -39,5 +39,5 @@ But wait, there's more! Well, until there's more, the slackbot package exposes g
 
 If you want to kick the tires, we would love feedback. Check out these two examples:
 
-- [simple.go](https://github.com/BeepBoopHQ/go-slackbot/blob/master/examples/simple/simple.go)
-- [wit.go](https://github.com/BeepBoopHQ/go-slackbot/blob/master/examples/wit/wit.go).
+- [simple.go](https://github.com/GrantStreetGroup/go-slackbot/blob/master/examples/simple/simple.go)
+- [wit.go](https://github.com/GrantStreetGroup/go-slackbot/blob/master/examples/wit/wit.go).

@@ -1,5 +1,5 @@
 // Package slackbot hopes to ease development of Slack bots by adding helpful
-// methods and a mux-router style interface to the github.com/nlopes/slack package.
+// methods and a mux-router style interface to the github.com/slack-go/slack package.
 //
 // Incoming Slack RTM events are mapped to a handler in the following form:
 // 	bot.Hear("(?i)how are you(.*)").MessageHandler(HowAreYouHandler)
@@ -14,10 +14,10 @@
 // 		attachment := slack.Attachment{
 // 			Pretext:   "We bring bots to life. :sunglasses: :thumbsup:",
 // 			Title:     "Host, deploy and share your bot in seconds.",
-// 			TitleLink: "https://beepboophq.com/",
+// 			TitleLink: "https://GrantStreetGroup.com/",
 // 			Text:      txt,
 // 			Fallback:  txt,
-// 			ImageURL:  "https://storage.googleapis.com/beepboophq/_assets/bot-1.22f6fb.png",
+// 			ImageURL:  "https://storage.googleapis.com/GrantStreetGroup/_assets/bot-1.22f6fb.png",
 // 			Color:     "#7CD197",
 // 		}
 //
@@ -25,14 +25,14 @@
 //		bot.ReplyWithAttachments(evt, attachments, slackbot.WithTyping)
 //	}
 //
-// The slackbot package exposes  github.com/nlopes/slack RTM and Client objects
+// The slackbot package exposes  github.com/slack-go/slack RTM and Client objects
 // enabling a consumer to interact with the lower level package directly:
 // 	func HowAreYouHandler(ctx context.Context, bot *slackbot.Bot, evt *slack.MessageEvent) {
 // 		bot.RTM.NewOutgoingMessage("Hello", "#random")
 // 	}
 //
 //
-// Project home and samples: https://github.com/BeepBoopHQ/go-slackbot
+// Project home and samples: https://github.com/GrantStreetGroup/go-slackbot
 package slackbot
 
 import (
@@ -41,19 +41,19 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 const (
 	WithTyping    bool = true
 	WithoutTyping bool = false
 
-	maxTypingSleepMs time.Duration = time.Millisecond * 2000
+	maxTypingSleep time.Duration = time.Millisecond * 2000
 )
 
 // New constructs a new Bot using the slackToken to authorize against the Slack service.
-func New(slackToken string) *Bot {
-	b := &Bot{Client: slack.New(slackToken)}
+func New(slackToken string, options ...slack.Option) *Bot {
+	b := &Bot{Client: slack.New(slackToken, options...)}
 	return b
 }
 
@@ -66,6 +66,7 @@ type Bot struct {
 	// Slack API
 	Client *slack.Client
 	RTM    *slack.RTM
+	Debug  bool
 }
 
 // Run listens for incoming slack RTM events, matching them to an appropriate handler.
@@ -77,6 +78,9 @@ func (b *Bot) Run() {
 		case msg := <-b.RTM.IncomingEvents:
 			ctx := context.Background()
 			ctx = AddBotToContext(ctx, b)
+			if b.Debug {
+				ctx = SetDebug(ctx)
+			}
 			switch ev := msg.Data.(type) {
 			case *slack.ConnectedEvent:
 				fmt.Printf("Connected: %#v\n", ev.Info.User)
@@ -88,6 +92,29 @@ func (b *Bot) Run() {
 				}
 
 				ctx = AddMessageToContext(ctx, ev)
+				var match RouteMatch
+				if matched, ctx := b.Match(ctx, &match); matched {
+					match.Handler(ctx)
+				}
+
+			case *slack.ReactionAddedEvent:
+				// Handle reaction events
+				if b.botUserID == ev.User {
+					continue
+				}
+
+				ctx = AddReactionAddedToContext(ctx, ev)
+				var match RouteMatch
+				if matched, ctx := b.Match(ctx, &match); matched {
+					match.Handler(ctx)
+				}
+			case *slack.ReactionRemovedEvent:
+				// Handle reaction events
+				if b.botUserID == ev.User {
+					continue
+				}
+
+				ctx = AddReactionRemovedToContext(ctx, ev)
 				var match RouteMatch
 				if matched, ctx := b.Match(ctx, &match); matched {
 					match.Handler(ctx)
@@ -118,10 +145,10 @@ func (b *Bot) Reply(evt *slack.MessageEvent, msg string, typing bool) {
 
 // ReplyWithAttachments replys to a message event with a Slack Attachments message.
 func (b *Bot) ReplyWithAttachments(evt *slack.MessageEvent, attachments []slack.Attachment, typing bool) {
-	params := slack.PostMessageParameters{AsUser: true}
-	params.Attachments = attachments
+	//	params := slack.PostMessageParameters{AsUser: true}
+	//	params.Attachments = attachments
 
-	b.Client.PostMessage(evt.Msg.Channel, "", params)
+	b.Client.PostMessage(evt.Msg.Channel, slack.MsgOptionAttachments(attachments...), slack.MsgOptionAsUser(true))
 }
 
 // Type sends a typing message and simulates delay (max 2000ms) based on message size.
@@ -129,8 +156,8 @@ func (b *Bot) Type(evt *slack.MessageEvent, msg interface{}) {
 	msgLen := msgLen(msg)
 
 	sleepDuration := time.Minute * time.Duration(msgLen) / 3000
-	if sleepDuration > maxTypingSleepMs {
-		sleepDuration = maxTypingSleepMs
+	if sleepDuration > maxTypingSleep {
+		sleepDuration = maxTypingSleep
 	}
 
 	b.RTM.SendMessage(b.RTM.NewTypingMessage(evt.Channel))
