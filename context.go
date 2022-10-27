@@ -46,7 +46,7 @@ func AddReactionAddedToContext(ctx context.Context, react *slack.ReactionAddedEv
 // AddReactionAddedToContext
 func AddReactionRemovedToContext(ctx context.Context, react *slack.ReactionRemovedEvent) context.Context {
 	nctx := context.WithValue(ctx, REACTION_CONTEXT, "Removed")
-	return context.WithValue(nctx, REACTION_CONTEXT, react)
+	return context.WithValue(nctx, REACTION_EVENT, react)
 }
 
 func ReactionTypeFromContext(ctx context.Context) string {
@@ -56,14 +56,14 @@ func ReactionTypeFromContext(ctx context.Context) string {
 	return ""
 }
 func ReactionAddedFromContext(ctx context.Context) *slack.ReactionAddedEvent {
-	if result, ok := ctx.Value(REACTION_CONTEXT).(*slack.ReactionAddedEvent); ok {
+	if result, ok := ctx.Value(REACTION_EVENT).(*slack.ReactionAddedEvent); ok {
 		return result
 	}
 	return nil
 }
 
 func ReactionRemovedFromContext(ctx context.Context) *slack.ReactionRemovedEvent {
-	if result, ok := ctx.Value(REACTION_CONTEXT).(*slack.ReactionRemovedEvent); ok {
+	if result, ok := ctx.Value(REACTION_EVENT).(*slack.ReactionRemovedEvent); ok {
 		return result
 	}
 	return nil
