@@ -1,6 +1,7 @@
 package slackbot
 
 import (
+	"log"
 	"regexp"
 
 	"golang.org/x/net/context"
@@ -56,6 +57,12 @@ func (r *Route) Hear(regex string) *Route {
 	return r
 }
 
+// Adds a reaction matcher
+func (r *Route) ReactTo(react string) *Route {
+	r.err = r.addReactionMatcher(react)
+	return r
+}
+
 func (r *Route) Messages(types ...MessageType) *Route {
 	r.addTypesMatcher(types...)
 	return r
@@ -75,6 +82,20 @@ func (r *Route) MessageHandler(fn MessageHandler) *Route {
 		msg := MessageFromContext(ctx)
 		fn(ctx, bot, msg)
 	})
+}
+
+func (r *Route) ReactionHandler(fn ReactionHandler) *Route {
+
+	return r.Handler(func(ctx context.Context) {
+		bot := BotFromContext(ctx)
+		switch ReactionTypeFromContext(ctx) {
+		case "Added":
+			fn(ctx, bot, ReactionAddedFromContext(ctx), nil)
+		case "Removed":
+			fn(ctx, bot, nil, ReactionRemovedFromContext(ctx))
+		}
+	})
+
 }
 
 func (r *Route) Preprocess(fn Preprocessor) *Route {
@@ -110,6 +131,9 @@ type RegexpMatcher struct {
 
 func (rm *RegexpMatcher) Match(ctx context.Context) (bool, context.Context) {
 	msg := MessageFromContext(ctx)
+	if msg == nil {
+		return false, ctx
+	}
 	// A message be receded by a direct mention. For simplicity sake, strip out any potention direct mentions first
 	text := StripDirectMention(msg.Text)
 	// now consider stripped text against regular expression
@@ -142,6 +166,9 @@ type TypesMatcher struct {
 
 func (tm *TypesMatcher) Match(ctx context.Context) (bool, context.Context) {
 	msg := MessageFromContext(ctx)
+	if msg == nil {
+		return false, ctx
+	}
 	for _, t := range tm.types {
 		switch t {
 		case DirectMessage:
@@ -168,5 +195,50 @@ func (r *Route) addTypesMatcher(types ...MessageType) error {
 	}
 
 	r.AddMatcher(&TypesMatcher{types: types, botUserID: ""})
+	return nil
+}
+
+// ============================================================================
+// Reaction Matcher
+// ============================================================================
+
+type ReactionMatcher struct {
+	reaction  string
+	botUserID string
+}
+
+func (rm *ReactionMatcher) Match(ctx context.Context) (bool, context.Context) {
+
+	if IsDebug(ctx) {
+		log.Printf("DEBUG: %s", ReactionTypeFromContext(ctx))
+	}
+
+	switch ReactionTypeFromContext(ctx) {
+	case "Added":
+		rv := ReactionAddedFromContext(ctx)
+		if rv.Reaction == rm.reaction {
+			return true, ctx
+		}
+	case "Removed":
+		rv := ReactionRemovedFromContext(ctx)
+		if rv.Reaction == rm.reaction {
+			return true, ctx
+		}
+	}
+
+	return false, ctx
+}
+
+func (rm *ReactionMatcher) SetBotID(botID string) {
+	rm.botUserID = botID
+}
+
+// addReactionMatcher adds a reactions matcher to route
+func (r *Route) addReactionMatcher(reaction string) error {
+	if r.err != nil {
+		return r.err
+	}
+
+	r.AddMatcher(&ReactionMatcher{reaction: reaction, botUserID: ""})
 	return nil
 }

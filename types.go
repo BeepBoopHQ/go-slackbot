@@ -3,10 +3,12 @@ package slackbot
 import (
 	"golang.org/x/net/context"
 
-	"github.com/nlopes/slack"
+	"github.com/slack-go/slack"
 )
 
 type MessageType string
+
+type Reactions string
 
 const (
 	DirectMessage MessageType = "direct_message"
@@ -17,6 +19,8 @@ const (
 
 type Handler func(context.Context)
 type MessageHandler func(ctx context.Context, bot *Bot, msg *slack.MessageEvent)
+type ReactionHandler func(ctx context.Context, bot *Bot, added *slack.ReactionAddedEvent, removed *slack.ReactionRemovedEvent)
+
 type Preprocessor func(context.Context) context.Context
 
 // Matcher type for matching message routes
